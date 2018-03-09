@@ -1,0 +1,7 @@
+---
+applications:
+  - name: sample-http-app
+    command: sample-http-app
+    env:
+      GOPACKAGENAME: code.cloudfoundry.org/sample-http-app
+
