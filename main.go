@@ -15,17 +15,8 @@ const (
 	DefaultWaitTime = 1 * time.Second
 )
 
-var (
-	port      string
-	waitTime  time.Duration
-	signals   chan os.Signal
-	closeChan chan string
-)
-
 func main() {
-	var port string
-
-	port = os.Getenv("PORT")
+	port := os.Getenv("PORT")
 	if port == "" {
 		port = DefaultPort
 	}
@@ -35,10 +26,8 @@ func main() {
 		waitTime = DefaultWaitTime
 	}
 
-	signals = make(chan os.Signal, 1)
+	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGTERM, syscall.SIGINT)
-
-	closeChan = make(chan string)
 
 	handler := NewHandler(waitTime)
 	server := http.Server{
