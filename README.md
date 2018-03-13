@@ -1,5 +1,7 @@
 # Sample HTTP Application
 
+**Note:** This repository should be imported as code.cloudfoundry.org/sample-http-app.
+
 The sample http application implements the correct shutdown behavior for http applications deployed to Cloud Foundry. The sample http app adheres to the contract below when shutting down:
 
 - App receives termination signal
