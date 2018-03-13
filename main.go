@@ -35,18 +35,22 @@ func main() {
 		Handler: handler,
 	}
 
+	errCh := make(chan error, 1)
 	go func() {
-		server.ListenAndServe()
+		errCh <- server.ListenAndServe()
 	}()
 	fmt.Println("Serving on port: " + port)
 
 	select {
+	case err := <-errCh:
+		fmt.Fprintln(os.Stderr, "error starting server:", err)
+		os.Exit(1)
 	case <-signals:
 		ctx, cancel := context.WithTimeout(context.Background(), waitTime)
 		defer cancel()
 		err := server.Shutdown(ctx)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "error shutting down server: %s\n", err)
+			fmt.Fprintln(os.Stderr, "error shutting down server:", err)
 			os.Exit(1)
 		}
 	}
