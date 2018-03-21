@@ -1,13 +1,16 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/tedsuo/ifrit"
+	"github.com/tedsuo/ifrit/http_server"
+	"github.com/tedsuo/ifrit/sigmon"
 )
 
 const (
@@ -19,15 +22,19 @@ type handler struct {
 	waitTime time.Duration
 }
 
-func NewHandler(waitTime time.Duration) *handler {
-	return &handler{
-		waitTime: waitTime,
-	}
-}
-
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	waitParam := r.FormValue("wait")
+	if waitParam == "" {
+		waitParam = "10us"
+	}
+	waitTime, err := time.ParseDuration(waitParam)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	fmt.Fprintf(w, "hello ")
-	time.Sleep(h.waitTime)
+	time.Sleep(waitTime)
 	fmt.Fprintf(w, "world!\n")
 }
 
@@ -37,37 +44,19 @@ func main() {
 		port = DefaultPort
 	}
 
-	waitTime, err := time.ParseDuration(os.Getenv("WAIT_TIME"))
-	if err != nil {
-		waitTime = DefaultWaitTime
-	}
+	// waitTime, err := time.ParseDuration(os.Getenv("WAIT_TIME"))
+	// if err != nil {
+	// 	waitTime = DefaultWaitTime
+	// }
 
 	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGTERM, syscall.SIGINT)
+	signal.Notify(signals)
 
-	handler := NewHandler(waitTime)
-	server := http.Server{
-		Addr:    fmt.Sprintf(":%s", port),
-		Handler: handler,
-	}
+	handler := &handler{}
 
-	errCh := make(chan error, 1)
-	go func() {
-		errCh <- server.ListenAndServe()
-	}()
+	runner := http_server.New(fmt.Sprintf(":%s", port), handler)
+	runner = sigmon.New(runner, syscall.SIGTERM, syscall.SIGINT)
+	process := ifrit.Invoke(runner)
 	fmt.Println("Serving on port: " + port)
-
-	select {
-	case err := <-errCh:
-		fmt.Fprintln(os.Stderr, "error starting server:", err)
-		os.Exit(1)
-	case <-signals:
-		ctx, cancel := context.WithTimeout(context.Background(), waitTime)
-		defer cancel()
-		err := server.Shutdown(ctx)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "error shutting down server:", err)
-			os.Exit(1)
-		}
-	}
+	<-process.Wait()
 }
