@@ -4,4 +4,5 @@ applications:
     command: sample-http-app
     env:
       GOPACKAGENAME: code.cloudfoundry.org/sample-http-app
+      START_DELAY: 50s
 

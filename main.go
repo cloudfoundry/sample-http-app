@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	DefaultPort     = "8080"
-	DefaultWaitTime = 1 * time.Second
+	DefaultPort       = "8080"
+	DefaultWaitTime   = 1 * time.Second
+	DefaultStartDelay = 0
 )
 
 type handler struct {
@@ -50,6 +51,12 @@ func main() {
 		Addr:    fmt.Sprintf(":%s", port),
 		Handler: handler,
 	}
+
+	startDelay, err := time.ParseDuration(os.Getenv("START_DELAY"))
+	if err != nil {
+		startDelay = DefaultStartDelay
+	}
+	time.Sleep(startDelay)
 
 	errCh := make(chan error, 1)
 	go func() {
