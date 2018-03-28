@@ -17,9 +17,9 @@ The app is configurable by setting the following environment variables:
 
 - `PORT`: The port on which the HTTP server will be listening. It defaults to `8080`.
 
-## Response latency
+## Response Latency
 
-The response latency can be controlled by setting the query parameter `wait` to any string parseable by [time.ParseDuration](https://golang.org/pkg/time/#ParseDuration). The default value is `10 µs`
+The response latency can be controlled by setting the query parameter `wait` to any string parseable by [time.ParseDuration](https://golang.org/pkg/time/#ParseDuration). The default value is `10 µs`.
 
 ## Deploy to Cloud Foundry
 
@@ -35,4 +35,4 @@ go build .
 ./sample-http-app
 ```
 
-To run the tests, first get the dependencies using `go get -t ./... && go get github.com/onsi/ginkgo/ginkgo` then run `ginkgo` in the app root directory:
+To run the tests, first get the dependencies using `go get -t ./... && go get github.com/onsi/ginkgo/ginkgo` then run `ginkgo` in the app root directory.
