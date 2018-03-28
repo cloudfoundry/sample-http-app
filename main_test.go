@@ -18,30 +18,20 @@ var _ = Describe("Sample HTTP Server", func() {
 
 	Context("when the endpoint is called", func() {
 		It("receives an HTTP OK response", func() {
-			resp, err = http.Get("http://0.0.0.0:8080")
+			resp, err = http.Get(url)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(resp.StatusCode).To(Equal(http.StatusOK))
 		})
 	})
 
-	Context("when WAIT_TIME is set", func() {
-		var (
-			testWaitTime time.Duration
-		)
-
-		BeforeEach(func() {
-			testWaitTimeString = "2s"
-			testWaitTime, err = time.ParseDuration(testWaitTimeString)
-			Expect(err).NotTo(HaveOccurred())
-		})
-
+	Context("when wait query param is set", func() {
 		It("should receive an HTTP OK after the WAIT_TIME", func() {
 			startTime := time.Now()
-			resp, err = http.Get("http://0.0.0.0:8080")
+			resp, err = http.Get(url + "?wait=2s")
 			endTime := time.Now()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(resp.StatusCode).To(Equal(http.StatusOK))
-			Expect(endTime.Sub(startTime)).To(BeNumerically(">=", testWaitTime))
+			Expect(endTime.Sub(startTime)).To(BeNumerically(">=", 2*time.Second))
 		})
 	})
 
@@ -53,7 +43,7 @@ var _ = Describe("Sample HTTP Server", func() {
 		JustBeforeEach(func() {
 			doneChan = make(chan string)
 			go func() {
-				resp, err = http.Get("http://0.0.0.0:8080")
+				resp, err = http.Get(url + "?wait=2s")
 				close(doneChan)
 			}()
 		})
@@ -73,7 +63,7 @@ var _ = Describe("Sample HTTP Server", func() {
 
 			It("does not accept new requests", func() {
 				time.Sleep(200 * time.Millisecond)
-				_, err := http.Get("http://0.0.0.0:8080")
+				_, err := http.Get(url)
 				Expect(err).To(HaveOccurred())
 			})
 		})

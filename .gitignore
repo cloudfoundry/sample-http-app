@@ -1,2 +1,4 @@
 sample-http-app
 sample-http-app.exe
+/bin
+/vendor

@@ -1,7 +1,5 @@
 # Sample HTTP Application
 
-**Note:** This repository should be imported as `code.cloudfoundry.org/sample-http-app`.
-
 The sample HTTP application implements the correct shutdown behavior for an HTTP application deployed to Cloud Foundry. It adheres to the following contract when shutting down:
 
 - App receives termination signal
@@ -19,6 +17,10 @@ The app is configurable by setting the following environment variables:
 
 - `PORT`: The port on which the HTTP server will be listening. It defaults to `8080`.
 
+## Response latency
+
+The response latency can be controlled by setting the query parameter `wait` to any string parseable by [time.ParseDuration](https://golang.org/pkg/time/#ParseDuration). The default value is `10 µs`
+
 ## Deploy to Cloud Foundry
 
 Simply run `cf push` from the app root directory and it should deploy successfully.
@@ -28,9 +30,9 @@ Simply run `cf push` from the app root directory and it should deploy successful
 To run locally, follow the steps below:
 
 ```
-go get ...
+go get ./...
 go build .
 ./sample-http-app
 ```
 
-To run the tests, run `ginkgo` in the app root directory:
+To run the tests, first get the dependencies using `go get -t ./... && go get github.com/onsi/ginkgo/ginkgo` then run `ginkgo` in the app root directory:

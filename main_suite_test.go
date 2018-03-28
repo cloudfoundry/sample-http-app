@@ -1,10 +1,11 @@
 package main_test
 
 import (
-	"fmt"
 	"os/exec"
+	"strconv"
 	"testing"
 
+	"code.cloudfoundry.org/localip"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
@@ -13,9 +14,8 @@ import (
 )
 
 var (
-	serverBinPath      string
-	process            ifrit.Process
-	testWaitTimeString string = "0s"
+	serverBinPath string
+	process       ifrit.Process
 )
 
 func TestApp(t *testing.T) {
@@ -31,15 +31,23 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	serverBinPath = string(pathsByte)
 })
 
+var (
+	url string
+)
+
 var _ = JustBeforeEach(func() {
 	runCmd := exec.Command(serverBinPath)
-	runCmd.Env = []string{fmt.Sprintf("WAIT_TIME=%s", testWaitTimeString)}
+	port, err := localip.LocalPort()
+	Expect(err).NotTo(HaveOccurred())
 	runner := ginkgomon.New(ginkgomon.Config{
 		Name:       "sample-http-serveer",
 		Command:    runCmd,
 		StartCheck: "Serving on port",
 	})
+	portStr := strconv.Itoa(int(port))
+	runner.Command.Env = append(runner.Command.Env, "PORT="+portStr)
 	process = ginkgomon.Invoke(runner)
+	url = "http://localhost:" + portStr
 })
 
 var _ = AfterEach(func() {
