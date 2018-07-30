@@ -18,7 +18,7 @@ const (
 
 // connManager keeps a record of active connections and their states
 type connManager struct {
-	activeConns map[net.Conn]atomic.Value
+	activeConns map[net.Conn]*atomic.Value
 	mu          sync.Mutex
 }
 
@@ -27,11 +27,11 @@ func (cm *connManager) setState(nc net.Conn, state http.ConnState) {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	if cm.activeConns == nil {
-		cm.activeConns = make(map[net.Conn]atomic.Value)
+		cm.activeConns = make(map[net.Conn]*atomic.Value)
 	}
 	switch state {
 	case http.StateNew:
-		cm.activeConns[nc] = atomic.Value{}
+		cm.activeConns[nc] = &atomic.Value{}
 	case http.StateHijacked, http.StateClosed:
 		delete(cm.activeConns, nc)
 	}
