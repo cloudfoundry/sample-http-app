@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -107,8 +108,11 @@ func main() {
 
 	select {
 	case err := <-errCh:
-		fmt.Fprintln(os.Stderr, "error starting server:", err)
-		os.Exit(1)
+		if !errors.Is(err, http.ErrServerClosed) {
+			fmt.Fprintln(os.Stderr, "error starting server:", err)
+			os.Exit(1)
+		}
+		os.Exit(0)
 	case <-signals:
 		// It is required that the listener is closed as soon as the signal is
 		// received to prevent any new traffic from getting in
